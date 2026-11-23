@@ -1,8 +1,8 @@
-# Firefox → Chrome-like layout (native vertical tabs)
+# Chrome-like layout for Firefox native vertical tabs
 
-![Top left of a Firefox window with native vertical tabs: before (default layout) and after (this userChrome.css)](before-after.png)
+![Top left of a Firefox window with native vertical tabs: before (default layout) and after (this userChrome.css)](screenshots/before-after.png)
 
-`userChrome.css` for Firefox 159 (tested on Ubuntu) with native vertical
+`chrome/userChrome.css` for Firefox 159 (tested on Ubuntu) with native vertical
 tabs:
 
 - the tabs panel reaches the top of the window;
@@ -34,54 +34,52 @@ The layout follows the active Firefox theme instead of imposing colors.
 With the official Mozilla themes (Default, Sun, Spark, Flame, Flare,
 Lavender, light and dark variants where available):
 
-![Six Firefox windows in a cascade, each with a different official Mozilla theme, showing that the layout adapts to the theme](themes-cascade.png)
+![Six Firefox windows in a cascade, each with a different official Mozilla theme, showing that the layout adapts to the theme](screenshots/themes-cascade.png)
 
 ## Installation
 
-1. Close Firefox, then run this command from a terminal (requires Bash and
-   curl):
+Turn on vertical tabs in Firefox's settings first. The stylesheet lives in
+`chrome/userChrome.css`, the layout the installers below expect. Pick one
+way to install it, then fully restart Firefox.
 
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/cjean-fr/atelier/main/packages/firefox-chrome-look/install-remote.sh | bash
-   ```
+### With fxcss
 
-   This downloads the installer and CSS from the same pinned revision into
-   a temporary directory, then removes them on exit. A failed download stops
-   the installation before any profile files are changed. The command runs
-   code from this repository: inspect `install-remote.sh` before running it
-   if you prefer.
+[fxcss](https://github.com/AdamXweb/fxcss) (Python 3.9+) installs into your
+real profile, backs up your existing `chrome/` and can undo everything:
 
-   The script lists the profiles of the detected Firefox (deb, snap and
-   flatpak are all inspected) and offers to pick one: type its number, or
-   Enter for the default profile. It reads your choice from the terminal,
-   even when launched through a pipe. A path can also be pasted at the
-   prompt. Without a terminal, pass the profile directory explicitly:
+```bash
+pipx install fxcss
+fxcss install cjean-fr/firefox-chrome-look
+```
 
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/cjean-fr/atelier/main/packages/firefox-chrome-look/install-remote.sh | bash -s -- "/path/to/profile"
-   ```
+To try the theme in a throwaway profile first, run
+`fxcss try cjean-fr/firefox-chrome-look`. Remove it with `fxcss uninstall`.
+fxcss lists a few "to check" items after installing; the only real
+requirement is vertical tabs being on.
 
-   The profile directory is shown in `about:support`, row "Profile
-   Directory".
+### With git-userChrome
 
-   From a local checkout of this package, installation still works without
-   downloading anything:
+[git-userChrome](https://github.com/soulhotel/git-userChrome) (needs `git`;
+script or app) clones the repository into your profile's `chrome/` folder and
+applies `chrome/user.js`, which enables the stylesheet preference:
 
-   ```bash
-   bash install.sh
-   # Or: bash install.sh "/path/to/profile" ["/path/to/userChrome.css"]
-   ```
+```bash
+bash <(curl -s https://raw.githubusercontent.com/soulhotel/git-userChrome/main/scripts/gituserChrome.sh) https://github.com/cjean-fr/firefox-chrome-look.git
+```
 
-2. Fully restart Firefox.
+It moves any existing `chrome/` to `chrome-<date>`. To remove the theme,
+delete the profile's `chrome/` folder and move that backup back.
 
-The script enables `toolkit.legacyUserProfileCustomizations.stylesheets`
-in `user.js` (with a timestamped backup) and backs up any existing
-`chrome/userChrome.css` before replacing it.
+### By hand
 
-## Uninstall
-
-Delete `chrome/userChrome.css` from the profile (or restore the `.bak.*`
-backup) and restart Firefox.
+1. Close Firefox. Find your profile directory in `about:support`, row
+   "Profile Directory".
+2. Copy `chrome/userChrome.css` into a `chrome/` folder inside that
+   profile directory (create the folder if needed).
+3. In `about:config`, set `toolkit.legacyUserProfileCustomizations.stylesheets`
+   to `true` (or copy `chrome/user.js` into the profile directory).
+4. Fully restart Firefox. To uninstall, delete `chrome/userChrome.css` from
+   the profile and restart.
 
 ## Settings
 
@@ -116,10 +114,10 @@ density; both can still be overridden with a fixed value.
 
 - Rely on Firefox conventions (native attributes, variables and
   mechanisms), so that new versions are easy to follow.
-- After changing either installer, run `bun run test` (contract tests on a
-  fake `$HOME`, nothing else is touched).
-- When updating the installer or CSS, update the payload revision in
-  `install-remote.sh` to a commit containing both files.
 - The committed version is our version, not a version to preserve.
 - Firefox's behavior without a custom `userChrome.css` remains a useful
   baseline.
+
+## License
+
+MIT
